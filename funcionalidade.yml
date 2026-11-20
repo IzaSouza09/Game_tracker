@@ -1,0 +1,30 @@
+name: Funcionalidade
+description: Proponha uma nova funcionalidade ou melhoria
+labels: ["funcionalidade"]
+body:
+  - type: textarea
+    id: necessidade
+    attributes:
+      label: Qual necessidade do usuário isto atende?
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceitação
+      description: Liste o que precisa ser verdade para considerar a tarefa pronta.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Listagem de jogos
+        - Detalhes do jogo
+        - Cadastro / edição
+        - Filtros e busca
+        - Tema e interface
+        - Infraestrutura / CI
+    validations:
+      required: true

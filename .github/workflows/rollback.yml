@@ -1,0 +1,67 @@
+# Rollback (PGC 6.4) — baseado em docs/aulas/modelos/rollback-modelo.yml.
+# Actions > Rollback > Run workflow > informe a tag (ex.: v1.0.0).
+# Passa pelo mesmo gate de aprovação do Environment `production`.
+# NÃO altera a main: depois do rollback, corrija a main com um PR `revert: ...`
+# ou `fix: ...` e abra uma Issue explicando o motivo.
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Versão para restaurar (ex.: v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cd-refs/heads/main   # mesma fila do CD: nunca roda junto com um deploy
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  TAG: ${{ inputs.tag }}
+
+jobs:
+  rollback:
+    name: Rollback para ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ inputs.tag }}
+    steps:
+      - name: Validar tag e baixar o pacote da Release
+        run: |
+          if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Tag inválida: '$TAG'. Use o formato vX.Y.Z."
+            exit 1
+          fi
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.zip' --dir entrega
+          ls -l entrega
+
+      - name: Marcar a Release como Latest
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --latest
+
+      - name: Extrair site
+        if: vars.PUBLICAR_PAGES == 'true'
+        run: mkdir -p site && unzip -q entrega/*.zip -d site
+
+      - name: Republicar no GitHub Pages
+        if: vars.PUBLICAR_PAGES == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: true
+          commit_message: 'rollback(producao): ${{ inputs.tag }}'
+
+      - name: Registrar no resumo (auditoria, PGC 10.3)
+        run: |
+          {
+            echo "## Rollback executado"
+            echo "- Versão restaurada: **$TAG**"
+            echo "- Executado por: @$GITHUB_ACTOR"
+            echo "- Lembrete: abra uma Issue explicando o motivo e corrija a main por PR (revert ou fix)."
+          } >> "$GITHUB_STEP_SUMMARY"

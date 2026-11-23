@@ -1,0 +1,175 @@
+# CD do Game Tracker (PGC 3.3, 6 e 9) — baseado em docs/aulas/modelos/cd-modelo.yml
+# da ONGConecta. Só o job `preparar` depende da stack (aqui: Flutter Web).
+#
+# Fluxo: merge na main -> calcula versão -> build único (pacote) -> staging
+#        -> aprovação manual no Environment `production` -> tag + Release (baseline).
+#
+# Pré-requisitos (Aula 1 e 3):
+#  - Environments `staging` e `production` (este com Required reviewers).
+#  - Settings > Actions > General > Workflow permissions: Read and write.
+#  - (Opcional) variável PUBLICAR_PAGES=true e Pages em gh-pages / (root).
+name: CD
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SITE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
+jobs:
+  preparar:
+    name: Versão e pacote
+    runs-on: ubuntu-latest
+    outputs:
+      versao: ${{ steps.versao.outputs.versao }}
+      release: ${{ steps.versao.outputs.release }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # histórico completo para achar a última tag
+
+      - name: Calcular versão (Conventional Commits)
+        id: versao
+        env:
+          NOTAS_ARQUIVO: notas-release.md
+        run: node scripts/proxima-versao.mjs
+
+      # ---------- Opção de build: Flutter Web (única opção mantida) ----------
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Build web
+        env:
+          VERSAO: ${{ steps.versao.outputs.versao }}
+        run: |
+          flutter pub get
+          flutter build web --release \
+            --build-name="$VERSAO" \
+            --build-number="${{ github.run_number }}"
+          # Caminhos relativos: o mesmo pacote funciona em /staging/ e na raiz do Pages.
+          sed -i 's|<base href="/">|<base href="./">|' build/web/index.html
+          cp -r build/web pacote   # <-- AJUSTE: pasta gerada pelo build
+          echo "$VERSAO" > pacote/VERSAO
+      # -----------------------------------------------------------------------
+
+      - name: Compactar pacote
+        env:
+          VERSAO: ${{ steps.versao.outputs.versao }}
+        run: |
+          if [ ! -d pacote ]; then
+            echo "::error::A pasta pacote/ não foi gerada pelo build."
+            exit 1
+          fi
+          (cd pacote && zip -qr "../${{ github.event.repository.name }}-$VERSAO.zip" .)
+          ls -lh *.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pacote
+          path: |
+            *.zip
+            notas-release.md
+          retention-days: 30
+
+  staging:
+    name: Staging
+    needs: preparar
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ vars.PUBLICAR_PAGES == 'true' && format('{0}/staging/', env.SITE) || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: pacote
+
+      - name: Extrair pacote
+        run: mkdir -p site && unzip -q ./*.zip -d site
+
+      - name: Publicar em staging (GitHub Pages)
+        if: vars.PUBLICAR_PAGES == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          destination_dir: staging
+          keep_files: true
+          commit_message: 'deploy(staging): v${{ needs.preparar.outputs.versao }}'
+
+      - name: Resumo
+        run: |
+          {
+            echo "## Staging: v${{ needs.preparar.outputs.versao }}"
+            if [ "${{ needs.preparar.outputs.release }}" = "true" ]; then
+              echo "Teste o pacote (artefato **pacote**) e aprove o job **Produção**."
+            else
+              echo "Sem feat/fix desde a última tag: nenhuma release será criada."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  producao:
+    name: Produção
+    needs: [preparar, staging]
+    if: needs.preparar.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: production   # Required reviewers: o job espera a aprovação (PGC 6.1)
+      url: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.preparar.outputs.versao }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: v${{ needs.preparar.outputs.versao }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: pacote
+          path: entrega   # o MESMO pacote testado em staging
+
+      - name: Extrair pacote
+        if: vars.PUBLICAR_PAGES == 'true'
+        run: mkdir -p site && unzip -q entrega/*.zip -d site
+
+      - name: Publicar em produção (GitHub Pages)
+        if: vars.PUBLICAR_PAGES == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: true
+          commit_message: 'deploy(producao): ${{ env.TAG }}'
+
+      - name: Baseline - criar tag (PGC 9)
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG já existe (re-execução). Nada a fazer."
+            echo "TAG_EXISTENTE=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "$TAG" -m "Release $TAG" "$GITHUB_SHA"
+          git push origin "$TAG"
+
+      - name: Criar Release com o pacote anexado
+        if: env.TAG_EXISTENTE != 'true'
+        run: |
+          gh release create "$TAG" entrega/*.zip \
+            --title "$TAG" \
+            --notes-file entrega/notas-release.md \
+            --verify-tag

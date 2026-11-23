@@ -7,15 +7,23 @@ import 'random_game_screen.dart';
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
+  Future<void> _abrir(BuildContext context, Widget tela) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(builder: (context) => tela),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    int totalJogos = initialGames.length;
-    int totalHoras = initialGames.fold(
+    final int totalJogos = initialGames.length;
+    final int totalHoras = initialGames.fold<int>(
       0,
       (soma, jogo) => soma + jogo.horasJogadas,
     );
-    double mediaNotas = totalJogos > 0
-        ? initialGames.fold(0.0, (soma, jogo) => soma + jogo.nota) / totalJogos
+    final double mediaNotas = totalJogos > 0
+        ? initialGames.fold<double>(0.0, (soma, jogo) => soma + jogo.nota) /
+            totalJogos
         : 0.0;
 
     return Scaffold(
@@ -102,41 +110,20 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const GameListScreen(),
-                  ),
-                );
-              },
+              onPressed: () => _abrir(context, const GameListScreen()),
               icon: const Icon(Icons.games),
               label: const Text('Ver Lista de Jogos'),
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const StatisticsScreen(),
-                  ),
-                );
-              },
+              onPressed: () => _abrir(context, const StatisticsScreen()),
               icon: const Icon(Icons.bar_chart),
               label: const Text('Ver Estatísticas'),
             ),
+            const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RandomGameScreen(),
-                  ),
-                );
-              },
+              onPressed: () => _abrir(context, const RandomGameScreen()),
               icon: const Icon(Icons.shuffle),
               label: const Text('O que jogar? (Aleatório)'),
             ),

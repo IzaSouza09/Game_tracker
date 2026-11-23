@@ -1,0 +1,33 @@
+# Valida o título do PR em Conventional Commits (PGC 5.2).
+# Copiado da ONGConecta sem alterações de lógica.
+name: Título do PR
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  titulo-pr:
+    name: titulo-pr
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Validar título no padrão <tipo>(<escopo>): <descrição>'
+        env:
+          # O título vai por variável de ambiente, nunca interpolado no script,
+          # para evitar injeção de comandos.
+          TITULO: ${{ github.event.pull_request.title }}
+        run: |
+          if echo "$TITULO" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._-]+\))?!?: .{3,}$'; then
+            echo "Título válido: $TITULO"
+          else
+            echo "::error::Título fora do padrão Conventional Commits: '$TITULO'"
+            echo "Exemplos válidos:"
+            echo "  feat(telas): adiciona filtro por plataforma"
+            echo "  fix(modelos): corrige cálculo da média"
+            echo "  ci: adiciona pipeline de integração contínua"
+            exit 1
+          fi

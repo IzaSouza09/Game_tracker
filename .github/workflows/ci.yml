@@ -1,0 +1,82 @@
+# CI do Game Tracker (PGC 4.2 e 5) — baseado em docs/aulas/modelos/ci-node.yml
+# da ONGConecta, trocando setup-node por subosito/flutter-action (Aula 2, seção 2).
+#
+# Na proteção da main, marque como obrigatórios SOMENTE `ci-ok` e `titulo-pr`.
+# Não marque `qualidade` nem `dependencias` (ver ADR 0002 da ONGConecta):
+# um job pulado deixaria o PR esperando para sempre.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: Lint, testes e build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .              # <-- AJUSTE: pasta do pubspec.yaml
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable                  # <-- AJUSTE: ou fixe flutter-version: 'x.y.z'
+          cache: true
+
+      - name: Instalar dependências (versões exatas do pubspec.lock)
+        run: flutter pub get
+
+      - name: Lint
+        # --no-fatal-infos: avisos (warning) e erros reprovam; dicas de estilo (info) não.
+        run: flutter analyze --no-fatal-infos
+
+      - name: Testes com cobertura
+        run: flutter test --coverage        # <-- AJUSTE: se mudar a pasta de testes
+
+      - name: Cobertura mínima
+        # Portão de 60% (PGC 5). Se a cobertura atual for menor, use o valor atual
+        # arredondado para baixo e abra a Issue "Elevar cobertura para 60%".
+        run: bash scripts/cobertura.sh 60   # <-- AJUSTE: limite de cobertura
+
+      - name: Build
+        run: flutter build web --release
+
+  dependencias:
+    name: Análise de dependências (SCA)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: critical        # ver ADR 0002 do Game Tracker (Aula 4)
+
+  ci-ok:
+    name: ci-ok
+    needs: [qualidade, dependencias]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conferir resultado dos jobs
+        env:
+          RESULTADOS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Resultados: $RESULTADOS"
+          for r in $RESULTADOS; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "::error::Algum job do CI falhou ou foi cancelado."
+              exit 1
+            fi
+          done
+          echo "CI ok."

@@ -27,6 +27,7 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
@@ -43,3 +44,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Variáveis de ambiente (PGC 4.1): só o .env.example vai para o Git
+.env
+.env.*
+!.env.example
+
+# Saídas do pipeline de entrega (Aula 3)
+/pacote/
+/entrega/
+/site/
+*.zip
+notas-release.md

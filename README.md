@@ -1,104 +1,84 @@
 # Game Tracker 🎮
 
-Aplicativo desenvolvido em Flutter para gerenciar e acompanhar a sua biblioteca de jogos, permitindo organizar o progresso, status e favoritos de forma prática.
+Aplicativo em Flutter para gerenciar e acompanhar a sua biblioteca de jogos: horas jogadas, nota e estatísticas da coleção.
 
 ---
 
 ## 🚀 Funcionalidades
 
-- **Listagem de Jogos:** Visualize todos os jogos cadastrados na sua biblioteca.
-- **Detalhes do Jogo:** Acompanhe status de conclusão, notas e informações detalhadas.
-- **Gerenciamento:** Adicione, edite ou remova jogos da sua lista pessoal.
-- **Filtros e Busca:** Encontre rapidamente jogos por status ou título.
+- **Painel (Dashboard):** total de jogos, total de horas jogadas e média das notas.
+- **Lista de Jogos:** todos os jogos da biblioteca com gênero, plataforma e descrição.
+- **Estatísticas:** visão consolidada da coleção.
+- **O que jogar?:** sorteia um jogo da biblioteca.
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🛠️ Stack
 
-- **Frontend/Mobile:** [Flutter](https://flutter.dev/) (Dart)
-- **Gerenciamento de Estado:** *(Ex: Provider / GetX / setState — ajuste conforme o seu)*
-- **Armazenamento:** *(Ex: SharedPreferences / SQLite / Firebase — ajuste conforme o seu)*
+| Item | Escolha |
+|---|---|
+| Linguagem / framework | Dart (SDK `^3.12.2`) + Flutter (canal stable) |
+| Gerenciamento de estado | Widgets do Flutter (`StatelessWidget` / `setState`) |
+| Dados | Em memória: lista `initialGames` em `lib/models/game.dart` |
+| Lint | `flutter_lints` + regras estritas em `analysis_options.yaml` |
+| Testes | `flutter_test` (testes de widget e de regra de negócio) |
+| CI/CD | GitHub Actions (`.github/workflows/`) |
+| Plataformas | Android, Web, Windows, Linux |
 
 ---
 
-## 📂 Estrutura de Pastas
+## ▶️ Como instalar e executar
 
-A estrutura do projeto está organizada da seguinte forma:
-
-```text
-game_tracker/
-├── .github/              # Modelos de Pull Request, Issues e CODEOWNERS
-├── android/              # Configurações nativas para Android
-├── lib/                  # Código principal em Dart (Flutter)
-│   ├── models/           # Classes de dados e modelos da aplicação
-│   ├── screens/          # Telas e interfaces de usuário
-│   └── main.dart         # Ponto de entrada do aplicativo
-├── linux/                # Configurações nativas para Linux
-├── web/                  # Configurações para a versão Web
-├── windows/              # Configurações nativas para Windows
-├── pubspec.yaml          # Dependências e assets do projeto
-└── pubspec.lock          # Versões exatas das dependências (Lockfile)
-## 🚀 Funcionalidades
-
-- **Listagem de Jogos:** visualize todos os jogos cadastrados na sua biblioteca.
-- **Detalhes do Jogo:** acompanhe status de conclusão, notas e informações detalhadas.
-- **Gerenciamento:** adicione, edite ou remova jogos da sua lista pessoal.
-- **Filtros e Busca:** encontre rapidamente jogos por status ou título.
-
-## 🛠️ Stack Tecnológica
-
-- **Linguagem/Framework:** [Flutter](https://flutter.dev/) (Dart, SDK `^3.12.2`)
-- **Plataformas:** Android, Web, Windows e Linux
-- **Gerenciamento de estado:** `setState` (nativo do Flutter)
-- **Armazenamento:** em memória (lista `initialGames` em `lib/models/game.dart`)
-- **Análise estática:** `flutter_lints` + regras extras em `analysis_options.yaml`
-
-## ▶️ Como instalar e rodar
-
-Pré-requisito: [Flutter SDK](https://docs.flutter.dev/get-started/install) instalado (`flutter doctor` sem erros).
+Pré-requisitos: [Flutter SDK](https://docs.flutter.dev/get-started/install) (canal stable) e Git.
 
 ```bash
 git clone https://github.com/IzaSouza09/Game_tracker.git
 cd Game_tracker
-cp .env.example .env     # variáveis de ambiente locais (o .env não vai para o Git)
-flutter pub get          # instala as dependências nas versões do pubspec.lock
-flutter run              # escolha o dispositivo (Android, Chrome, Windows, Linux)
+flutter pub get          # instala as dependências exatas do pubspec.lock
+flutter run -d chrome    # ou: -d windows | -d linux | -d <id do emulador Android>
 ```
 
-## ✅ Como rodar os testes e a análise
+Variáveis de ambiente: copie `.env.example` para `.env` (o `.env` não vai para o Git). Hoje o app não lê nenhuma variável.
+
+## ✅ Como rodar lint e testes
 
 ```bash
-flutter test      # testes automatizados (pasta test/)
-flutter analyze   # análise estática / lints
+flutter analyze --no-fatal-infos     # lint (o mesmo que o CI roda)
+flutter test --coverage              # testes + cobertura em coverage/lcov.info
+bash scripts/cobertura.sh 60         # confere a cobertura mínima (Git Bash no Windows)
+flutter build web                    # build de produção em build/web
 ```
 
-## 🔐 Variáveis de ambiente
+---
 
-Os nomes das variáveis estão em [`.env.example`](.env.example). Hoje o app não consome
-nenhuma delas; o arquivo já deixa a estrutura pronta para quando houver API ou backend.
-**Nunca** faça commit de chaves reais.
+## 🔁 Fluxo de trabalho (PGC)
 
-## 🤝 Fluxo de contribuição
+- `main` é protegida: toda mudança entra por **Pull Request** revisado pelo par.
+- Branch: `feature/<nº da issue>-<descricao>` (ex.: `feature/3-ci`).
+- Título do PR em **Conventional Commits** (`feat(telas): ...`, `fix(modelos): ...`, `docs: ...`). O título vira o commit na `main` e define a próxima versão.
+- Merge somente por **Squash and merge**.
+- Guia completo para quem chega: [`docs/onboarding.md`](docs/onboarding.md).
 
-A branch `main` é protegida: toda mudança entra por **Pull Request**, com 1 aprovação de
-outra pessoa e *squash merge*. Use branches `feature/<issue>-<descricao>` e títulos no padrão
-[Conventional Commits](https://www.conventionalcommits.org/pt-br/) (ex.: `feat: adiciona busca por título`).
+---
 
 ## 📂 Estrutura de pastas
 
 ```text
 Game_tracker/
-├── .github/              # Template de PR, Issues e CODEOWNERS
+├── .github/              # Workflows de CI/CD, templates de PR e Issues, CODEOWNERS, Dependabot
 ├── android/              # Configurações nativas para Android
-├── lib/                  # Código principal em Dart
-│   ├── models/           # Classes de dados e modelos
-│   ├── screens/          # Telas e interfaces de usuário
+├── docs/                 # Onboarding, ADRs e rastreabilidade
+├── lib/                  # Código principal em Dart (Flutter)
+│   ├── models/           # Classes de dados (Game) e lista inicial
+│   ├── screens/          # Telas (dashboard, lista, estatísticas, aleatório)
 │   └── main.dart         # Ponto de entrada do aplicativo
 ├── linux/                # Configurações nativas para Linux
+├── scripts/              # Cobertura mínima e cálculo de versão
 ├── test/                 # Testes automatizados
-├── web/                  # Versão Web
+├── web/                  # Configurações para a versão Web
 ├── windows/              # Configurações nativas para Windows
-├── .env.example          # Modelo de variáveis de ambiente (sem valores reais)
+├── .env.example          # Nomes das variáveis de ambiente (sem valores)
+├── analysis_options.yaml # Regras de lint
 ├── pubspec.yaml          # Dependências e assets do projeto
 └── pubspec.lock          # Versões exatas das dependências (lockfile)
 ```

@@ -1,0 +1,10 @@
+# Revisores automáticos por área (PGC 2 e 5.2).
+# @IzaSouza09 = Desenvolvedora Líder do Game Tracker.
+# Pipelines, scripts de entrega, dependências e regras de lint são de maior
+# risco, por isso a líder é sempre chamada para revisar.
+
+/.github/               @IzaSouza09
+/scripts/               @IzaSouza09
+/pubspec.yaml           @IzaSouza09
+/pubspec.lock           @IzaSouza09
+/analysis_options.yaml  @IzaSouza09

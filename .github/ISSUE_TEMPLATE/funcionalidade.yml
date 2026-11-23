@@ -1,18 +1,21 @@
 name: Funcionalidade
 description: Proponha uma nova funcionalidade ou melhoria
-labels: ["funcionalidade"]
+title: 'feat: '
+labels: [funcionalidade]
 body:
   - type: textarea
-    id: necessidade
+    id: problema
     attributes:
-      label: Qual necessidade do usuário isto atende?
+      label: Qual necessidade do jogador isto atende?
     validations:
       required: true
   - type: textarea
     id: criterios
     attributes:
       label: Critérios de aceitação
-      description: Liste o que precisa ser verdade para considerar a tarefa pronta.
+      placeholder: |
+        - [ ] O jogador consegue...
+        - [ ] O app impede...
     validations:
       required: true
   - type: dropdown
@@ -20,11 +23,10 @@ body:
     attributes:
       label: Área
       options:
-        - Listagem de jogos
-        - Detalhes do jogo
-        - Cadastro / edição
-        - Filtros e busca
-        - Tema e interface
-        - Infraestrutura / CI
+        - telas (lib/screens)
+        - modelos e dados (lib/models)
+        - estatísticas
+        - plataformas (android/web/windows/linux)
+        - pipeline/infra
     validations:
       required: true

@@ -65,4 +65,12 @@ List<Game> initialGames = [
     horasJogadas: 2,
     nota: 9.0,
   ),
+  Game(
+    title: 'Hollow Knight',
+    genre: 'Metroidvania',
+    platform: 'PC',
+    descricao: 'Explore o reino arruinado de Hallownest.',
+    horasJogadas: 40,
+    nota: 9.4,
+  ),
 ];

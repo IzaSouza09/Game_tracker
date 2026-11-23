@@ -1,7 +1,0 @@
-# Revisores automáticos por área (PGC 2 e 5.2).
-# Mudanças em pipelines, dependências e código-fonte chamam o Desenvolvedor Líder.
-
-/.github/ @IzaSouza09
-/lib/ @IzaSouza09
-/pubspec.yaml @IzaSouza09
-/pubspec.lock @IzaSouza09

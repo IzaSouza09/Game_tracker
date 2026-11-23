@@ -1,5 +1,19 @@
 # Normaliza finais de linha: evita que máquinas Windows do laboratório
 # gravem CRLF em scripts que rodam no Linux dos runners do GitHub.
 * text=auto eol=lf
+
+# Arquivos binários: nunca converter
 *.png binary
 *.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.jar binary
+*.zip binary
+
+# Scripts do Windows precisam de CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf

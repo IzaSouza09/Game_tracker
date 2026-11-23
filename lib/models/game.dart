@@ -44,7 +44,7 @@ List<Game> initialGames = [
   Game(
     title: 'Minecraft',
     genre: 'Sandbox',
-    platform: 'Multiplatform',
+    platform: 'Multiplataforma',
     descricao: 'Construa, explore e sobreviva em mundos infinitos de blocos.',
     horasJogadas: 30,
     nota: 8.5,

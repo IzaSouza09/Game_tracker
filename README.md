@@ -38,6 +38,17 @@ flutter pub get          # instala as dependências exatas do pubspec.lock
 flutter run -d chrome    # ou: -d windows | -d linux | -d <id do emulador Android>
 ```
 
+### Rodar no emulador Android
+
+```bash
+flutter emulators                      # lista os emuladores instalados
+flutter emulators --launch <id>        # abre o emulador escolhido
+flutter devices                        # confere se ele apareceu
+flutter run -d <id-do-dispositivo>
+```
+
+Sem emulador? Crie um no Android Studio em **Device Manager → Create device**.
+
 Variáveis de ambiente: copie `.env.example` para `.env` (o `.env` não vai para o Git). Hoje o app não lê nenhuma variável.
 
 ## ✅ Como rodar lint e testes

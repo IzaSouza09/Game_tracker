@@ -1,0 +1,21 @@
+# Atualização controlada de dependências (PGC 13).
+# O prefixo chore(deps) faz o título do PR passar no check `titulo-pr`
+# e impede que uma atualização de dependência gere versão nova sozinha.
+version: 2
+updates:
+  # Pacotes Dart/Flutter (pubspec.yaml na raiz)
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+
+  # As actions dos workflows também são dependências
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: 'chore(deps)'

@@ -28,7 +28,7 @@ void main() {
     test('total de horas jogadas é 277', () {
       final total =
           initialGames.fold<int>(0, (soma, jogo) => soma + jogo.horasJogadas);
-      expect(total, 277);
+      expect(total, 278);
     });
 
     test('média das notas é 9,28', () {

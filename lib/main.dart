@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'screens/dashboard_screen.dart';
 
 void main() {
-  final naoUsada = 1;
   runApp(const GameTrackerApp());
 }
  class GameTrackerApp extends StatelessWidget {

@@ -4,8 +4,8 @@ import 'package:game_tracker/models/game.dart';
 
 void main() {
   group('Biblioteca inicial', () {
-    test('tem 6 jogos', () {
-      expect(initialGames.length, 6);
+    test('tem 7 jogos', () {
+      expect(initialGames.length, 7);
     });
 
     test('não tem títulos repetidos', () {
@@ -25,16 +25,16 @@ void main() {
       }
     });
 
-    test('total de horas jogadas é 277', () {
+    test('total de horas jogadas é 317', () {
       final total =
           initialGames.fold<int>(0, (soma, jogo) => soma + jogo.horasJogadas);
-      expect(total, 277);
+      expect(total, 317);
     });
 
-    test('média das notas é 9,28', () {
+    test('média das notas é 9,30', () {
       final somaNotas =
           initialGames.fold<double>(0, (soma, jogo) => soma + jogo.nota);
-      expect(somaNotas / initialGames.length, closeTo(9.28, 0.01));
+      expect(somaNotas / initialGames.length, closeTo(9.30, 0.01));
     });
   });
 

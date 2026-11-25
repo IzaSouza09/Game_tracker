@@ -22,9 +22,9 @@ void main() {
     expect(find.text('Horas Jogadas'), findsOneWidget);
     expect(find.text('Média das Notas'), findsOneWidget);
 
-    // 7 jogos; 277 + 40 (Hollow Knight) = 317 h; média 65,1 / 7 = 9,30 -> "9.3"
-    expect(find.text('7'), findsWidgets);
-    expect(find.text('317 h'), findsOneWidget);
+    // 6 jogos; 120+45+60+30+20+2 = 277 h; média 55,7 / 6 = 9,28 -> "9.3"
+    expect(find.text('6'), findsWidgets);
+    expect(find.text('277 h'), findsOneWidget);
     expect(find.text('9.3'), findsOneWidget);
   });
 
